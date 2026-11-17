@@ -1,0 +1,182 @@
+[project]
+name = "coldkeeper"
+version = "0.1.0"
+description = "ColdKeeper — мониторинг температуры холодильного оборудования: журнал, история, уведомления"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "aiogram>=3.15,<4",
+    "alembic>=1.14",
+    "asyncpg>=0.30",
+    "fastapi>=0.115",
+    "httpx>=0.28",
+    "openpyxl>=3.1.5",
+    "pydantic>=2.10,<3",
+    "pydantic-settings>=2.6,<3",
+    "python-docx>=1.1",
+    "sqlalchemy[asyncio]>=2.0.36,<2.1",
+    "tzdata>=2024.2",
+    "uvicorn>=0.32",
+]
+
+[project.scripts]
+coldkeeper = "backend.interfaces.cli.app:main"
+coldkeeper-worker = "backend.interfaces.worker.app:main"
+coldkeeper-sim = "backend.simulator.cli:main"
+
+[dependency-groups]
+dev = [
+    "black>=24.10",
+    "import-linter>=2.1",
+    "mypy>=1.13",
+    "pre-commit>=4.0",
+    "pytest>=8.3",
+    "pytest-asyncio>=0.25",
+    "ruff>=0.8",
+    "types-openpyxl>=3.1.5",
+]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["backend"]
+
+[tool.uv]
+default-groups = ["dev"]
+
+# mypy is configured in mypy.ini only (do not add [tool.mypy] here).
+
+[tool.black]
+line-length = 120
+target-version = ["py313"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+src = [".", "tests"]
+extend-exclude = ["frontend", ".demo", "md"]
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort
+    "N",     # pep8-naming
+    "UP",    # pyupgrade
+    "B",     # bugbear
+    "S",     # bandit
+    "SIM",   # simplify
+    "C4",    # comprehensions
+    "RET",   # return statements
+    "PTH",   # pathlib
+    "PIE",   # unnecessary code
+    "T20",   # print statements
+    "ERA",   # commented-out code
+    "DTZ",   # naive datetimes: readings are UTC, journal days are in the site's time zone
+    "ASYNC", # blocking calls inside async code
+    "FAST",  # FastAPI
+    "PLE",   # pylint errors
+    "PLW",   # pylint warnings
+    "RUF",   # ruff-specific
+    "C90",   # mccabe complexity
+]
+ignore = [
+    "RUF001", # ambiguous unicode in strings: the product is Russian-language
+    "RUF002", # same for docstrings
+    "RUF003", # same for comments
+    "B008",   # FastAPI declares dependencies as call defaults
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "S101",    # assert is how pytest checks
+    "S105",    # fixed demo passwords in tests are not secrets
+    "S106",
+    "PLW2901", # loop variable rebinding in table-driven tests
+]
+"backend/adapters/db/migrations/versions/*" = ["E501"]
+"backend/simulator/**" = [
+    "S311", # random.Random is the seeded, reproducible generator by design, not for secrets
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["backend", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+filterwarnings = ["error", "ignore::DeprecationWarning"]
+
+[tool.importlinter]
+root_packages = ["backend"]
+# needed for contracts that forbid third-party packages (fastapi, sqlalchemy, …)
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Слои: interfaces → application → domain"
+type = "layers"
+layers = [
+    "backend.interfaces",
+    "backend.composition",
+    "backend.adapters",
+    "backend.application",
+    "backend.domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "Домен и сценарии не зависят от фреймворков и инфраструктуры"
+type = "forbidden"
+source_modules = ["backend.domain", "backend.application"]
+forbidden_modules = [
+    "fastapi",
+    "starlette",
+    "sqlalchemy",
+    "aiogram",
+    "httpx",
+    "openpyxl",
+    "backend.settings",
+]
+
+[[tool.importlinter.contracts]]
+name = "Настройки читают только composition roots"
+type = "forbidden"
+source_modules = ["backend.adapters"]
+forbidden_modules = ["backend.settings"]
+ignore_imports = [
+    # Alembic's env.py is an entry point (a composition root of its own) that needs the database URL.
+    "backend.adapters.db.migrations.env -> backend.settings",
+]
+
+[[tool.importlinter.contracts]]
+name = "Симулятор не импортирует серверный код"
+type = "forbidden"
+source_modules = ["backend.simulator"]
+forbidden_modules = [
+    "backend.domain",
+    "backend.application",
+    "backend.adapters",
+    "backend.interfaces",
+    "backend.composition",
+    "backend.settings",
+]
+
+[[tool.importlinter.contracts]]
+name = "Серверный код не импортирует симулятор"
+type = "forbidden"
+source_modules = [
+    "backend.domain",
+    "backend.application",
+    "backend.adapters",
+    "backend.interfaces",
+    "backend.composition",
+    "backend.settings",
+]
+forbidden_modules = ["backend.simulator"]

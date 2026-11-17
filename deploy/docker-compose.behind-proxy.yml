@@ -1,0 +1,18 @@
+# VPS where ports 80 and 443 already belong to another web server (for example, a Caddy with its own Caddyfile).
+# ColdKeeper's proxy listens on a local port only; the existing server terminates TLS for the ColdKeeper domain
+# and forwards to it (see README, «VPS, где 80 и 443 уже заняты»). Put in .env:
+#   COMPOSE_FILE=docker-compose.yml:deploy/docker-compose.behind-proxy.yml
+services:
+  db:
+    # Not reachable from outside the Docker network.
+    ports: !reset []
+
+  proxy:
+    environment:
+      # Plain HTTP inside: the certificate is obtained by the outer server, not here.
+      SITE_ADDRESS: ":80"
+      # Trust X-Forwarded-For / X-Forwarded-Proto from the outer server (it reaches this proxy from a private address).
+      CADDY_TRUSTED_PROXIES: ${CADDY_TRUSTED_PROXIES:-private_ranges}
+    ports: !override
+      # 127.0.0.1 when the outer server runs on the host; the Docker bridge address (e.g. 172.17.0.1) when it runs in a container.
+      - "${PROXY_BIND:-127.0.0.1}:${HTTP_PORT:-8081}:80"

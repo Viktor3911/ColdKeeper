@@ -1,0 +1,56 @@
+# Checks only — nothing is rewritten on commit; run `task fmt` to format and autofix.
+# Python tools come from uv.lock (uv run --locked), mypy uses mypy.ini and checks the whole package.
+# Setup: uv run pre-commit install   ·   Full run: uv run pre-commit run --all-files
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+        args: ["--unsafe"] # docker-compose overrides use !reset / !override tags
+      - id: check-toml
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: check-merge-conflict
+      - id: detect-private-key
+
+  - repo: local
+    hooks:
+      - id: black
+        name: black (check)
+        entry: uv run --locked black --check --diff
+        language: system
+        types: [python]
+
+      - id: ruff
+        name: ruff (check)
+        entry: uv run --locked ruff check
+        language: system
+        types: [python]
+
+      - id: mypy
+        name: mypy (mypy.ini, whole package)
+        entry: uv run --locked mypy --config-file mypy.ini
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: import-linter
+        name: import-linter (layer contracts)
+        entry: uv run --locked lint-imports
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: frontend-lint
+        name: eslint + prettier (check)
+        entry: npm --prefix frontend run lint
+        language: system
+        files: ^frontend/
+        pass_filenames: false
+
+      - id: frontend-typecheck
+        name: tsc
+        entry: npm --prefix frontend run typecheck
+        language: system
+        files: ^frontend/
+        pass_filenames: false

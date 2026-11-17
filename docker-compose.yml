@@ -1,0 +1,146 @@
+# ColdKeeper: PostgreSQL, API, worker and Caddy (frontend + /api). Local defaults need no .env;
+# production values come from .env (see .env.example) and deploy/docker-compose.prod.yml.
+name: coldkeeper
+
+x-backend: &backend
+  # Built once by the `migrate` service; the other backend services reuse the same image.
+  image: coldkeeper-backend:local
+  environment:
+    COLDKEEPER_ENV: ${COLDKEEPER_ENV:-development}
+    COLDKEEPER_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-coldkeeper}:${POSTGRES_PASSWORD:-coldkeeper}@db:5432/${POSTGRES_DB:-coldkeeper}
+    COLDKEEPER_PUBLIC_URL: ${COLDKEEPER_PUBLIC_URL:-http://localhost:8080}
+    COLDKEEPER_ALLOWED_ORIGINS: ${COLDKEEPER_ALLOWED_ORIGINS:-["http://localhost:8080"]}
+    COLDKEEPER_TELEGRAM_BOT_TOKEN: ${COLDKEEPER_TELEGRAM_BOT_TOKEN:-}
+    COLDKEEPER_TELEGRAM_BOT_USERNAME: ${COLDKEEPER_TELEGRAM_BOT_USERNAME:-}
+    COLDKEEPER_LOG_LEVEL: ${COLDKEEPER_LOG_LEVEL:-INFO}
+  networks: [internal]
+
+services:
+  db:
+    image: postgres:17.7-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-coldkeeper}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-coldkeeper}
+      POSTGRES_DB: ${POSTGRES_DB:-coldkeeper}
+    ports:
+      # Only on the local machine, for `task dev:*` and migrations from the host.
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    networks: [internal]
+    restart: unless-stopped
+
+  db-test:
+    profiles: [test]
+    image: postgres:17.7-alpine
+    environment:
+      POSTGRES_USER: coldkeeper
+      POSTGRES_PASSWORD: coldkeeper
+      POSTGRES_DB: coldkeeper_test
+    ports:
+      - "127.0.0.1:${POSTGRES_TEST_PORT:-5434}:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U coldkeeper -d coldkeeper_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  migrate:
+    <<: *backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    <<: *backend
+    # Forwarded headers (real client IP for the sign-in limit, scheme for Secure cookies) are trusted
+    # only from the proxy's fixed address; the API port is not published.
+    command:
+      - uvicorn
+      - --factory
+      - backend.interfaces.http.app:create_production_app
+      - --host=0.0.0.0
+      - --port=8000
+      - --proxy-headers
+      - --forwarded-allow-ips=172.28.0.10
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  worker:
+    <<: *backend
+    # Exactly one worker: Telegram allows a single long-polling client per bot token.
+    command: ["coldkeeper-worker"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  proxy:
+    build:
+      context: .
+      dockerfile: deploy/caddy/Dockerfile
+    image: coldkeeper-proxy:local
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+    volumes:
+      - caddy-data:/data
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      internal:
+        ipv4_address: 172.28.0.10
+    restart: unless-stopped
+
+  seed:
+    <<: *backend
+    profiles: [demo]
+    command: ["coldkeeper", "seed-demo"]
+    volumes:
+      - demo-data:/app/.demo
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  simulator:
+    <<: *backend
+    profiles: [demo]
+    # Goes through the public entry point (proxy → /api/v1/ingest), exactly like a device.
+    command: ["coldkeeper-sim", "live", "--url", "http://proxy"]
+    volumes:
+      - demo-data:/app/.demo:ro
+    depends_on:
+      proxy:
+        condition: service_started
+
+volumes:
+  pgdata:
+  caddy-data:
+  demo-data:
+
+networks:
+  internal:
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24

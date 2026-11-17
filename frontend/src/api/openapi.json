@@ -1,0 +1,3885 @@
+{
+  "components": {
+    "schemas": {
+      "AssignmentIn": {
+        "additionalProperties": false,
+        "description": "Assign a sensor to a point from ``starts_at`` (now by default).",
+        "properties": {
+          "point_id": {
+            "format": "uuid",
+            "title": "Point Id",
+            "type": "string"
+          },
+          "starts_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts At"
+          }
+        },
+        "required": [
+          "point_id"
+        ],
+        "title": "AssignmentIn",
+        "type": "object"
+      },
+      "AssignmentOut": {
+        "additionalProperties": false,
+        "description": "Assignment period.",
+        "properties": {
+          "ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "point_id": {
+            "format": "uuid",
+            "title": "Point Id",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "point_id",
+          "starts_at",
+          "ends_at"
+        ],
+        "title": "AssignmentOut",
+        "type": "object"
+      },
+      "BindingCodeOut": {
+        "additionalProperties": false,
+        "description": "One-time binding code.",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "deep_link": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deep Link"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "expires_at",
+          "deep_link"
+        ],
+        "title": "BindingCodeOut",
+        "type": "object"
+      },
+      "ControlState": {
+        "description": "What the control column shows.",
+        "enum": [
+          "ok",
+          "no_data",
+          "sensor_error"
+        ],
+        "title": "ControlState",
+        "type": "string"
+      },
+      "CurrentSensorOut": {
+        "additionalProperties": false,
+        "description": "Sensor of a point.",
+        "properties": {
+          "hardware_id": {
+            "title": "Hardware Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/SensorKind"
+          },
+          "sensor_id": {
+            "format": "uuid",
+            "title": "Sensor Id",
+            "type": "string"
+          },
+          "since": {
+            "format": "date-time",
+            "title": "Since",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sensor_id",
+          "hardware_id",
+          "kind",
+          "since"
+        ],
+        "title": "CurrentSensorOut",
+        "type": "object"
+      },
+      "DeliveryOut": {
+        "additionalProperties": false,
+        "description": "Delivery to one recipient.",
+        "properties": {
+          "attempts": {
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "recipient_title": {
+            "title": "Recipient Title",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DeliveryStatus"
+          }
+        },
+        "required": [
+          "recipient_title",
+          "status",
+          "attempts",
+          "last_error"
+        ],
+        "title": "DeliveryOut",
+        "type": "object"
+      },
+      "DeliveryStatus": {
+        "description": "State of one message to one recipient.",
+        "enum": [
+          "pending",
+          "sent",
+          "failed",
+          "dry_run"
+        ],
+        "title": "DeliveryStatus",
+        "type": "string"
+      },
+      "Direction": {
+        "description": "Side of the allowed range.",
+        "enum": [
+          "high",
+          "low"
+        ],
+        "title": "Direction",
+        "type": "string"
+      },
+      "EquipmentCardOut": {
+        "additionalProperties": false,
+        "description": "Equipment card.",
+        "properties": {
+          "equipment": {
+            "$ref": "#/components/schemas/EquipmentOut"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/PointOverviewOut"
+            },
+            "title": "Points",
+            "type": "array"
+          }
+        },
+        "required": [
+          "equipment",
+          "points"
+        ],
+        "title": "EquipmentCardOut",
+        "type": "object"
+      },
+      "EquipmentIn": {
+        "additionalProperties": false,
+        "description": "Create or edit equipment.",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/EquipmentKind",
+            "default": "refrigerator"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "room_id": {
+            "format": "uuid",
+            "title": "Room Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "room_id",
+          "name"
+        ],
+        "title": "EquipmentIn",
+        "type": "object"
+      },
+      "EquipmentKind": {
+        "description": "Type of cold equipment; a hint for the interface, not a temperature norm.",
+        "enum": [
+          "refrigerator",
+          "freezer",
+          "combined",
+          "cold_room",
+          "display",
+          "other"
+        ],
+        "title": "EquipmentKind",
+        "type": "string"
+      },
+      "EquipmentOut": {
+        "additionalProperties": false,
+        "description": "Equipment.",
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/EquipmentKind"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "room_id": {
+            "format": "uuid",
+            "title": "Room Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "room_id",
+          "name",
+          "kind"
+        ],
+        "title": "EquipmentOut",
+        "type": "object"
+      },
+      "ErrorOut": {
+        "additionalProperties": false,
+        "description": "Error body.",
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorOut",
+        "type": "object"
+      },
+      "EventKind": {
+        "description": "Notification is sent when an incident opens and when it closes, never per measurement.",
+        "enum": [
+          "opened",
+          "closed"
+        ],
+        "title": "EventKind",
+        "type": "string"
+      },
+      "EventOut": {
+        "additionalProperties": false,
+        "description": "Notification event.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "deliveries": {
+            "items": {
+              "$ref": "#/components/schemas/DeliveryOut"
+            },
+            "title": "Deliveries",
+            "type": "array"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/EventKind"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "text",
+          "created_at",
+          "deliveries"
+        ],
+        "title": "EventOut",
+        "type": "object"
+      },
+      "ExportFormat": {
+        "description": "Supported file formats.",
+        "enum": [
+          "csv",
+          "xlsx"
+        ],
+        "title": "ExportFormat",
+        "type": "string"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HealthOut": {
+        "additionalProperties": false,
+        "description": "Health check.",
+        "properties": {
+          "database": {
+            "title": "Database",
+            "type": "boolean"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "database"
+        ],
+        "title": "HealthOut",
+        "type": "object"
+      },
+      "IncidentOut": {
+        "additionalProperties": false,
+        "description": "Incident with notifications.",
+        "properties": {
+          "close_temperature": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Close Temperature"
+          },
+          "closed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At"
+          },
+          "direction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Direction"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocationOut"
+          },
+          "open_temperature": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Open Temperature"
+          },
+          "opened_at": {
+            "format": "date-time",
+            "title": "Opened At",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/IncidentType"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "direction",
+          "opened_at",
+          "closed_at",
+          "open_temperature",
+          "close_temperature",
+          "location",
+          "events"
+        ],
+        "title": "IncidentOut",
+        "type": "object"
+      },
+      "IncidentType": {
+        "description": "At most one open incident of each type per point.",
+        "enum": [
+          "temperature",
+          "sensor_error",
+          "connection_lost"
+        ],
+        "title": "IncidentType",
+        "type": "string"
+      },
+      "InventoryOut": {
+        "additionalProperties": false,
+        "description": "Whole inventory of the organization.",
+        "properties": {
+          "equipment": {
+            "items": {
+              "$ref": "#/components/schemas/EquipmentOut"
+            },
+            "title": "Equipment",
+            "type": "array"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/PointOut"
+            },
+            "title": "Points",
+            "type": "array"
+          },
+          "rooms": {
+            "items": {
+              "$ref": "#/components/schemas/RoomOut"
+            },
+            "title": "Rooms",
+            "type": "array"
+          },
+          "sites": {
+            "items": {
+              "$ref": "#/components/schemas/SiteOut"
+            },
+            "title": "Sites",
+            "type": "array"
+          }
+        },
+        "required": [
+          "sites",
+          "rooms",
+          "equipment",
+          "points"
+        ],
+        "title": "InventoryOut",
+        "type": "object"
+      },
+      "JournalOut": {
+        "additionalProperties": false,
+        "description": "Daily journal.",
+        "properties": {
+          "first_day": {
+            "format": "date",
+            "title": "First Day",
+            "type": "string"
+          },
+          "has_simulation": {
+            "title": "Has Simulation",
+            "type": "boolean"
+          },
+          "last_day": {
+            "format": "date",
+            "title": "Last Day",
+            "type": "string"
+          },
+          "organization_name": {
+            "title": "Organization Name",
+            "type": "string"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/JournalRowOut"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "organization_name",
+          "first_day",
+          "last_day",
+          "has_simulation",
+          "rows"
+        ],
+        "title": "JournalOut",
+        "type": "object"
+      },
+      "JournalRowOut": {
+        "additionalProperties": false,
+        "description": "One \"date × point\" row.",
+        "properties": {
+          "control_measured_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Control Measured At"
+          },
+          "control_state": {
+            "$ref": "#/components/schemas/ControlState"
+          },
+          "control_temperature": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Control Temperature"
+          },
+          "coverage": {
+            "title": "Coverage",
+            "type": "number"
+          },
+          "day": {
+            "format": "date",
+            "title": "Day",
+            "type": "string"
+          },
+          "error_count": {
+            "title": "Error Count",
+            "type": "integer"
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocationOut"
+          },
+          "maximum": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maximum"
+          },
+          "minimum": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Minimum"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/MeasurementSource"
+            },
+            "title": "Sources",
+            "type": "array"
+          },
+          "valid_count": {
+            "title": "Valid Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "location",
+          "day",
+          "control_state",
+          "control_measured_at",
+          "control_temperature",
+          "minimum",
+          "maximum",
+          "valid_count",
+          "error_count",
+          "coverage",
+          "sources"
+        ],
+        "title": "JournalRowOut",
+        "type": "object"
+      },
+      "LocationOut": {
+        "additionalProperties": false,
+        "description": "Path of a point.",
+        "properties": {
+          "equipment_id": {
+            "format": "uuid",
+            "title": "Equipment Id",
+            "type": "string"
+          },
+          "equipment_name": {
+            "title": "Equipment Name",
+            "type": "string"
+          },
+          "point_id": {
+            "format": "uuid",
+            "title": "Point Id",
+            "type": "string"
+          },
+          "point_name": {
+            "title": "Point Name",
+            "type": "string"
+          },
+          "room_id": {
+            "format": "uuid",
+            "title": "Room Id",
+            "type": "string"
+          },
+          "room_name": {
+            "title": "Room Name",
+            "type": "string"
+          },
+          "site_id": {
+            "format": "uuid",
+            "title": "Site Id",
+            "type": "string"
+          },
+          "site_name": {
+            "title": "Site Name",
+            "type": "string"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "site_id",
+          "site_name",
+          "timezone",
+          "room_id",
+          "room_name",
+          "equipment_id",
+          "equipment_name",
+          "point_id",
+          "point_name"
+        ],
+        "title": "LocationOut",
+        "type": "object"
+      },
+      "LoginIn": {
+        "additionalProperties": false,
+        "description": "Sign-in form.",
+        "properties": {
+          "login": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Login",
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "login",
+          "password"
+        ],
+        "title": "LoginIn",
+        "type": "object"
+      },
+      "MeasurementSource": {
+        "description": "Label stored on every measurement, copied from the sensor registration — never trusted from the client.",
+        "enum": [
+          "device",
+          "simulator"
+        ],
+        "title": "MeasurementSource",
+        "type": "string"
+      },
+      "MetaOut": {
+        "additionalProperties": false,
+        "description": "Facts the interface shows (setup instructions, dry-run notice).",
+        "properties": {
+          "bot_configured": {
+            "title": "Bot Configured",
+            "type": "boolean"
+          },
+          "bot_username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bot Username"
+          },
+          "environment": {
+            "title": "Environment",
+            "type": "string"
+          },
+          "ingest_url": {
+            "title": "Ingest Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "environment",
+          "ingest_url",
+          "bot_configured",
+          "bot_username"
+        ],
+        "title": "MetaOut",
+        "type": "object"
+      },
+      "PointIn": {
+        "additionalProperties": false,
+        "description": "Create or edit a point.",
+        "properties": {
+          "equipment_id": {
+            "format": "uuid",
+            "title": "Equipment Id",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/PointSettingsBody"
+          }
+        },
+        "required": [
+          "equipment_id",
+          "name",
+          "settings"
+        ],
+        "title": "PointIn",
+        "type": "object"
+      },
+      "PointOut": {
+        "additionalProperties": false,
+        "description": "Point.",
+        "properties": {
+          "equipment_id": {
+            "format": "uuid",
+            "title": "Equipment Id",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/PointSettingsBody"
+          }
+        },
+        "required": [
+          "id",
+          "equipment_id",
+          "name",
+          "settings"
+        ],
+        "title": "PointOut",
+        "type": "object"
+      },
+      "PointOverviewOut": {
+        "additionalProperties": false,
+        "description": "A point with its live status.",
+        "properties": {
+          "alarm_direction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Direction"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_demo": {
+            "title": "Is Demo",
+            "type": "boolean"
+          },
+          "last_measured_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Measured At"
+          },
+          "last_received_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Received At"
+          },
+          "last_temperature": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Temperature"
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocationOut"
+          },
+          "open_incidents": {
+            "title": "Open Incidents",
+            "type": "integer"
+          },
+          "pending_since": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pending Since"
+          },
+          "sensor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CurrentSensorOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "settings": {
+            "$ref": "#/components/schemas/PointSettingsBody"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PointStatus"
+          }
+        },
+        "required": [
+          "location",
+          "settings",
+          "status",
+          "last_temperature",
+          "last_measured_at",
+          "last_received_at",
+          "pending_since",
+          "alarm_direction",
+          "sensor",
+          "open_incidents",
+          "is_demo"
+        ],
+        "title": "PointOverviewOut",
+        "type": "object"
+      },
+      "PointSettingsBody": {
+        "additionalProperties": false,
+        "description": "Monitoring settings of a point (durations in seconds).",
+        "properties": {
+          "deviation_seconds": {
+            "default": 300,
+            "maximum": 86400.0,
+            "minimum": 0.0,
+            "title": "Deviation Seconds",
+            "type": "integer"
+          },
+          "expected_interval_seconds": {
+            "default": 60,
+            "maximum": 86400.0,
+            "minimum": 10.0,
+            "title": "Expected Interval Seconds",
+            "type": "integer"
+          },
+          "high_threshold": {
+            "title": "High Threshold",
+            "type": "number"
+          },
+          "low_threshold": {
+            "title": "Low Threshold",
+            "type": "number"
+          },
+          "offline_timeout_seconds": {
+            "default": 300,
+            "maximum": 604800.0,
+            "minimum": 20.0,
+            "title": "Offline Timeout Seconds",
+            "type": "integer"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/SettingsProfile",
+            "default": "normal"
+          },
+          "recovery_seconds": {
+            "default": 120,
+            "maximum": 86400.0,
+            "minimum": 0.0,
+            "title": "Recovery Seconds",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "low_threshold",
+          "high_threshold"
+        ],
+        "title": "PointSettingsBody",
+        "type": "object"
+      },
+      "PointStatus": {
+        "description": "What the interface shows for a point, most severe first in :data:`STATUS_SEVERITY`.",
+        "enum": [
+          "no_data",
+          "normal",
+          "pending",
+          "alarm",
+          "sensor_error",
+          "offline"
+        ],
+        "title": "PointStatus",
+        "type": "string"
+      },
+      "RawOut": {
+        "additionalProperties": false,
+        "description": "Raw measurements of a period.",
+        "properties": {
+          "first_day": {
+            "format": "date",
+            "title": "First Day",
+            "type": "string"
+          },
+          "has_simulation": {
+            "title": "Has Simulation",
+            "type": "boolean"
+          },
+          "last_day": {
+            "format": "date",
+            "title": "Last Day",
+            "type": "string"
+          },
+          "organization_name": {
+            "title": "Organization Name",
+            "type": "string"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/RawRowOut"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "organization_name",
+          "first_day",
+          "last_day",
+          "has_simulation",
+          "total",
+          "rows"
+        ],
+        "title": "RawOut",
+        "type": "object"
+      },
+      "RawRowOut": {
+        "additionalProperties": false,
+        "description": "Raw measurement.",
+        "properties": {
+          "humidity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Humidity"
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocationOut"
+          },
+          "measured_at": {
+            "format": "date-time",
+            "title": "Measured At",
+            "type": "string"
+          },
+          "received_at": {
+            "format": "date-time",
+            "title": "Received At",
+            "type": "string"
+          },
+          "sensor_hardware_id": {
+            "title": "Sensor Hardware Id",
+            "type": "string"
+          },
+          "sensor_ok": {
+            "title": "Sensor Ok",
+            "type": "boolean"
+          },
+          "source": {
+            "$ref": "#/components/schemas/MeasurementSource"
+          },
+          "temperature": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temperature"
+          }
+        },
+        "required": [
+          "location",
+          "sensor_hardware_id",
+          "measured_at",
+          "received_at",
+          "temperature",
+          "sensor_ok",
+          "source",
+          "humidity"
+        ],
+        "title": "RawRowOut",
+        "type": "object"
+      },
+      "RecipientActiveIn": {
+        "additionalProperties": false,
+        "description": "Pause or resume a recipient.",
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "active"
+        ],
+        "title": "RecipientActiveIn",
+        "type": "object"
+      },
+      "RecipientOut": {
+        "additionalProperties": false,
+        "description": "Telegram recipient.",
+        "properties": {
+          "chat_id": {
+            "title": "Chat Id",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "chat_id",
+          "title",
+          "is_active",
+          "created_at"
+        ],
+        "title": "RecipientOut",
+        "type": "object"
+      },
+      "RecipientsOut": {
+        "additionalProperties": false,
+        "description": "Recipients and bot status.",
+        "properties": {
+          "bot_configured": {
+            "title": "Bot Configured",
+            "type": "boolean"
+          },
+          "bot_username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bot Username"
+          },
+          "recipients": {
+            "items": {
+              "$ref": "#/components/schemas/RecipientOut"
+            },
+            "title": "Recipients",
+            "type": "array"
+          }
+        },
+        "required": [
+          "bot_configured",
+          "bot_username",
+          "recipients"
+        ],
+        "title": "RecipientsOut",
+        "type": "object"
+      },
+      "Role": {
+        "description": "Minimal MVP roles.",
+        "enum": [
+          "owner",
+          "observer"
+        ],
+        "title": "Role",
+        "type": "string"
+      },
+      "RoomIn": {
+        "additionalProperties": false,
+        "description": "Create or edit a room.",
+        "properties": {
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "site_id": {
+            "format": "uuid",
+            "title": "Site Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "site_id",
+          "name"
+        ],
+        "title": "RoomIn",
+        "type": "object"
+      },
+      "RoomOut": {
+        "additionalProperties": false,
+        "description": "Room.",
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "site_id": {
+            "format": "uuid",
+            "title": "Site Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "site_id",
+          "name"
+        ],
+        "title": "RoomOut",
+        "type": "object"
+      },
+      "SensorDetailOut": {
+        "additionalProperties": false,
+        "description": "Sensor with assignment history.",
+        "properties": {
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/AssignmentOut"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "sensor": {
+            "$ref": "#/components/schemas/SensorOut"
+          }
+        },
+        "required": [
+          "sensor",
+          "history"
+        ],
+        "title": "SensorDetailOut",
+        "type": "object"
+      },
+      "SensorIn": {
+        "additionalProperties": false,
+        "description": "Register a sensor.",
+        "properties": {
+          "hardware_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Hardware Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/SensorKind",
+            "default": "physical"
+          },
+          "model": {
+            "default": "UnitX-T",
+            "maxLength": 100,
+            "title": "Model",
+            "type": "string"
+          }
+        },
+        "required": [
+          "hardware_id"
+        ],
+        "title": "SensorIn",
+        "type": "object"
+      },
+      "SensorKind": {
+        "description": "Fixed at registration; a switch to real hardware means a new sensor, so history keeps its label.",
+        "enum": [
+          "physical",
+          "simulated"
+        ],
+        "title": "SensorKind",
+        "type": "string"
+      },
+      "SensorOut": {
+        "additionalProperties": false,
+        "description": "Sensor with current assignment and last contact.",
+        "properties": {
+          "assignment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssignmentOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "hardware_id": {
+            "title": "Hardware Id",
+            "type": "string"
+          },
+          "has_token": {
+            "title": "Has Token",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/SensorKind"
+          },
+          "last_measured_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Measured At"
+          },
+          "last_sensor_ok": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Sensor Ok"
+          },
+          "last_temperature": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Temperature"
+          },
+          "last_unassigned": {
+            "title": "Last Unassigned",
+            "type": "boolean"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "point": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LocationOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "token_issued_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token Issued At"
+          }
+        },
+        "required": [
+          "id",
+          "hardware_id",
+          "kind",
+          "model",
+          "has_token",
+          "token_issued_at",
+          "created_at",
+          "assignment",
+          "point",
+          "last_measured_at",
+          "last_temperature",
+          "last_sensor_ok",
+          "last_unassigned"
+        ],
+        "title": "SensorOut",
+        "type": "object"
+      },
+      "SeriesPointOut": {
+        "additionalProperties": false,
+        "description": "Chart point; ``temperature`` is null for a probe failure.",
+        "properties": {
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "source": {
+            "$ref": "#/components/schemas/MeasurementSource"
+          },
+          "t": {
+            "format": "date-time",
+            "title": "T",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "t",
+          "value",
+          "ok",
+          "source"
+        ],
+        "title": "SeriesPointOut",
+        "type": "object"
+      },
+      "SessionOut": {
+        "additionalProperties": false,
+        "description": "The signed-in user; ``csrf_token`` must be sent in ``X-CSRF-Token`` with every change.",
+        "properties": {
+          "csrf_token": {
+            "title": "Csrf Token",
+            "type": "string"
+          },
+          "login": {
+            "title": "Login",
+            "type": "string"
+          },
+          "organization_id": {
+            "format": "uuid",
+            "title": "Organization Id",
+            "type": "string"
+          },
+          "organization_name": {
+            "title": "Organization Name",
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          }
+        },
+        "required": [
+          "login",
+          "role",
+          "organization_id",
+          "organization_name",
+          "csrf_token"
+        ],
+        "title": "SessionOut",
+        "type": "object"
+      },
+      "SettingsProfile": {
+        "description": "``demo`` marks the shortened timeouts used for live demonstrations.",
+        "enum": [
+          "normal",
+          "demo"
+        ],
+        "title": "SettingsProfile",
+        "type": "string"
+      },
+      "SiteIn": {
+        "additionalProperties": false,
+        "description": "Create or edit a site.",
+        "properties": {
+          "address": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Address",
+            "type": "string"
+          },
+          "control_time": {
+            "default": "10:00:00",
+            "format": "time",
+            "title": "Control Time",
+            "type": "string"
+          },
+          "control_window_minutes": {
+            "default": 30,
+            "maximum": 360.0,
+            "minimum": 1.0,
+            "title": "Control Window Minutes",
+            "type": "integer"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "timezone": {
+            "default": "Asia/Vladivostok",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "SiteIn",
+        "type": "object"
+      },
+      "SiteOut": {
+        "additionalProperties": false,
+        "description": "Site.",
+        "properties": {
+          "address": {
+            "title": "Address",
+            "type": "string"
+          },
+          "control_time": {
+            "format": "time",
+            "title": "Control Time",
+            "type": "string"
+          },
+          "control_window_minutes": {
+            "title": "Control Window Minutes",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "address",
+          "timezone",
+          "control_time",
+          "control_window_minutes"
+        ],
+        "title": "SiteOut",
+        "type": "object"
+      },
+      "TokenOut": {
+        "additionalProperties": false,
+        "description": "A device token shown once.",
+        "properties": {
+          "ingest_url": {
+            "title": "Ingest Url",
+            "type": "string"
+          },
+          "sensor_id": {
+            "format": "uuid",
+            "title": "Sensor Id",
+            "type": "string"
+          },
+          "token": {
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sensor_id",
+          "token",
+          "ingest_url"
+        ],
+        "title": "TokenOut",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "ColdKeeper API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "description": "Open a session: HttpOnly cookie + CSRF token in the body.",
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Login",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "description": "Delete the session on the server and the cookie in the browser.",
+        "operationId": "logout_api_v1_auth_logout_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Logout",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/equipment": {
+      "post": {
+        "description": "New equipment.",
+        "operationId": "create_equipment_api_v1_equipment_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EquipmentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipmentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Equipment",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/api/v1/equipment/{equipment_id}": {
+      "delete": {
+        "description": "Delete equipment without points.",
+        "operationId": "delete_equipment_api_v1_equipment__equipment_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "equipment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Equipment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Equipment",
+        "tags": [
+          "inventory"
+        ]
+      },
+      "get": {
+        "description": "Equipment with its points and statuses.",
+        "operationId": "equipment_card_api_v1_equipment__equipment_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "equipment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Equipment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipmentCardOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Equipment Card",
+        "tags": [
+          "monitoring"
+        ]
+      },
+      "put": {
+        "description": "Edit equipment.",
+        "operationId": "update_equipment_api_v1_equipment__equipment_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "equipment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Equipment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EquipmentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipmentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Equipment",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "description": "Liveness with a database round trip.",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/incidents": {
+      "get": {
+        "description": "Incidents, newest first, with their notifications.",
+        "operationId": "incidents_api_v1_incidents_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "open",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Open",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 200,
+              "maximum": 500,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/IncidentOut"
+                  },
+                  "title": "Response Incidents Api V1 Incidents Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Incidents",
+        "tags": [
+          "monitoring"
+        ]
+      }
+    },
+    "/api/v1/ingest/unitx": {
+      "post": {
+        "description": "Store one measurement. ``204`` only after the transaction is committed; identical repeats also get ``204``.",
+        "operationId": "ingest_unitx_api_v1_ingest_unitx_post",
+        "parameters": [
+          {
+            "description": "Ключ устройства",
+            "in": "query",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "description": "Ключ устройства",
+              "maxLength": 200,
+              "minLength": 20,
+              "title": "Token",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "rssi",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 0,
+                  "minimum": -150,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Rssi"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Не JSON"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Неверный или отозванный ключ"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Аппаратный ID не соответствует ключу"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Для этого времени уже сохранено другое значение"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Слишком большой запрос"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Некорректное измерение"
+          }
+        },
+        "summary": "Ingest Unitx",
+        "tags": [
+          "ingest"
+        ]
+      }
+    },
+    "/api/v1/inventory": {
+      "get": {
+        "description": "All sites, rooms, equipment and points of the organization.",
+        "operationId": "inventory_api_v1_inventory_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Inventory",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/api/v1/journal/daily": {
+      "get": {
+        "description": "Daily journal rows.",
+        "operationId": "daily_api_v1_journal_daily_get",
+        "parameters": [
+          {
+            "description": "Первый день (местная дата объекта)",
+            "in": "query",
+            "name": "first",
+            "required": true,
+            "schema": {
+              "description": "Первый день (местная дата объекта)",
+              "format": "date",
+              "title": "First",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Последний день включительно",
+            "in": "query",
+            "name": "last",
+            "required": true,
+            "schema": {
+              "description": "Последний день включительно",
+              "format": "date",
+              "title": "Last",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "site_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Site Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "equipment_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Equipment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JournalOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Daily",
+        "tags": [
+          "journal"
+        ]
+      }
+    },
+    "/api/v1/journal/daily/export": {
+      "get": {
+        "description": "Daily journal file (CSV for Russian Excel or XLSX).",
+        "operationId": "daily_export_api_v1_journal_daily_export_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ExportFormat",
+              "default": "csv"
+            }
+          },
+          {
+            "description": "Первый день (местная дата объекта)",
+            "in": "query",
+            "name": "first",
+            "required": true,
+            "schema": {
+              "description": "Первый день (местная дата объекта)",
+              "format": "date",
+              "title": "First",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Последний день включительно",
+            "in": "query",
+            "name": "last",
+            "required": true,
+            "schema": {
+              "description": "Последний день включительно",
+              "format": "date",
+              "title": "Last",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "site_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Site Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "equipment_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Equipment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Daily Export",
+        "tags": [
+          "journal"
+        ]
+      }
+    },
+    "/api/v1/journal/form/export": {
+      "get": {
+        "description": "Word journal in the layout of the recommended sample (SanPiN 2.3/2.4.4282-26, appendix N 2).",
+        "operationId": "form_export_api_v1_journal_form_export_get",
+        "parameters": [
+          {
+            "description": "Первый день (местная дата объекта)",
+            "in": "query",
+            "name": "first",
+            "required": true,
+            "schema": {
+              "description": "Первый день (местная дата объекта)",
+              "format": "date",
+              "title": "First",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Последний день включительно",
+            "in": "query",
+            "name": "last",
+            "required": true,
+            "schema": {
+              "description": "Последний день включительно",
+              "format": "date",
+              "title": "Last",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "site_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Site Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "equipment_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Equipment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Form Export",
+        "tags": [
+          "journal"
+        ]
+      }
+    },
+    "/api/v1/journal/raw": {
+      "get": {
+        "description": "Raw measurements (the newest on screen; everything in the export).",
+        "operationId": "raw_api_v1_journal_raw_get",
+        "parameters": [
+          {
+            "description": "Первый день (местная дата объекта)",
+            "in": "query",
+            "name": "first",
+            "required": true,
+            "schema": {
+              "description": "Первый день (местная дата объекта)",
+              "format": "date",
+              "title": "First",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Последний день включительно",
+            "in": "query",
+            "name": "last",
+            "required": true,
+            "schema": {
+              "description": "Последний день включительно",
+              "format": "date",
+              "title": "Last",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "site_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Site Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "equipment_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Equipment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RawOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Raw",
+        "tags": [
+          "journal"
+        ]
+      }
+    },
+    "/api/v1/journal/raw/export": {
+      "get": {
+        "description": "Raw measurements file.",
+        "operationId": "raw_export_api_v1_journal_raw_export_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ExportFormat",
+              "default": "csv"
+            }
+          },
+          {
+            "description": "Первый день (местная дата объекта)",
+            "in": "query",
+            "name": "first",
+            "required": true,
+            "schema": {
+              "description": "Первый день (местная дата объекта)",
+              "format": "date",
+              "title": "First",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Последний день включительно",
+            "in": "query",
+            "name": "last",
+            "required": true,
+            "schema": {
+              "description": "Последний день включительно",
+              "format": "date",
+              "title": "Last",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "site_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Site Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "equipment_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Equipment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Raw Export",
+        "tags": [
+          "journal"
+        ]
+      }
+    },
+    "/api/v1/meta": {
+      "get": {
+        "description": "Environment facts for the interface.",
+        "operationId": "meta_api_v1_meta_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetaOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Meta",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/overview": {
+      "get": {
+        "description": "All points, problems first.",
+        "operationId": "overview_api_v1_overview_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PointOverviewOut"
+                  },
+                  "title": "Response Overview Api V1 Overview Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Overview",
+        "tags": [
+          "monitoring"
+        ]
+      }
+    },
+    "/api/v1/points": {
+      "post": {
+        "description": "New measurement point.",
+        "operationId": "create_point_api_v1_points_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PointIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PointOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Point",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/api/v1/points/{point_id}": {
+      "delete": {
+        "description": "Delete a point that never had a sensor or measurements.",
+        "operationId": "delete_point_api_v1_points__point_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "point_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Point Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Point",
+        "tags": [
+          "inventory"
+        ]
+      },
+      "put": {
+        "description": "Edit a point and its monitoring settings.",
+        "operationId": "update_point_api_v1_points__point_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "point_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Point Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PointIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PointOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Point",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/api/v1/points/{point_id}/series": {
+      "get": {
+        "description": "Measurements for the chart.",
+        "operationId": "series_api_v1_points__point_id__series_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "point_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Point Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Начало, ISO 8601 с часовым поясом",
+            "in": "query",
+            "name": "start",
+            "required": true,
+            "schema": {
+              "description": "Начало, ISO 8601 с часовым поясом",
+              "format": "date-time",
+              "title": "Start",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Конец (не включая), ISO 8601 с часовым поясом",
+            "in": "query",
+            "name": "end",
+            "required": true,
+            "schema": {
+              "description": "Конец (не включая), ISO 8601 с часовым поясом",
+              "format": "date-time",
+              "title": "End",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SeriesPointOut"
+                  },
+                  "title": "Response Series Api V1 Points  Point Id  Series Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Series",
+        "tags": [
+          "monitoring"
+        ]
+      }
+    },
+    "/api/v1/recipients": {
+      "get": {
+        "description": "Recipients and whether a bot is configured (otherwise notifications are dry-run).",
+        "operationId": "recipients_api_v1_recipients_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipientsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Recipients",
+        "tags": [
+          "recipients"
+        ]
+      }
+    },
+    "/api/v1/recipients/code": {
+      "post": {
+        "description": "One-time code to send to the bot.",
+        "operationId": "binding_code_api_v1_recipients_code_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BindingCodeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Binding Code",
+        "tags": [
+          "recipients"
+        ]
+      }
+    },
+    "/api/v1/recipients/{recipient_id}/active": {
+      "post": {
+        "description": "Pause or resume notifications to a chat.",
+        "operationId": "set_active_api_v1_recipients__recipient_id__active_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recipient_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Recipient Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecipientActiveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Active",
+        "tags": [
+          "recipients"
+        ]
+      }
+    },
+    "/api/v1/rooms": {
+      "post": {
+        "description": "New room.",
+        "operationId": "create_room_api_v1_rooms_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoomIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Room",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/api/v1/rooms/{room_id}": {
+      "delete": {
+        "description": "Delete a room without equipment.",
+        "operationId": "delete_room_api_v1_rooms__room_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Room",
+        "tags": [
+          "inventory"
+        ]
+      },
+      "put": {
+        "description": "Edit a room.",
+        "operationId": "update_room_api_v1_rooms__room_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "room_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Room Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoomIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Room",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/api/v1/sensors": {
+      "get": {
+        "description": "Sensors of the organization.",
+        "operationId": "list_sensors_api_v1_sensors_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SensorOut"
+                  },
+                  "title": "Response List Sensors Api V1 Sensors Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Sensors",
+        "tags": [
+          "sensors"
+        ]
+      },
+      "post": {
+        "description": "Register a sensor; the token is shown only in this response.",
+        "operationId": "register_sensor_api_v1_sensors_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SensorIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Register Sensor",
+        "tags": [
+          "sensors"
+        ]
+      }
+    },
+    "/api/v1/sensors/{sensor_id}": {
+      "get": {
+        "description": "Sensor with assignment history.",
+        "operationId": "sensor_detail_api_v1_sensors__sensor_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sensor_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Sensor Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SensorDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Sensor Detail",
+        "tags": [
+          "sensors"
+        ]
+      }
+    },
+    "/api/v1/sensors/{sensor_id}/assignment": {
+      "delete": {
+        "description": "End the current assignment.",
+        "operationId": "unassign_api_v1_sensors__sensor_id__assignment_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sensor_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Sensor Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Unassign",
+        "tags": [
+          "sensors"
+        ]
+      },
+      "post": {
+        "description": "Assign to a point (replacing the point's previous sensor at the same moment).",
+        "operationId": "assign_api_v1_sensors__sensor_id__assignment_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sensor_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Sensor Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignmentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignmentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Assign",
+        "tags": [
+          "sensors"
+        ]
+      }
+    },
+    "/api/v1/sensors/{sensor_id}/token": {
+      "delete": {
+        "description": "Revoke the token.",
+        "operationId": "revoke_token_api_v1_sensors__sensor_id__token_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sensor_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Sensor Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revoke Token",
+        "tags": [
+          "sensors"
+        ]
+      },
+      "post": {
+        "description": "New token; the old one stops working.",
+        "operationId": "reissue_token_api_v1_sensors__sensor_id__token_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sensor_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Sensor Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reissue Token",
+        "tags": [
+          "sensors"
+        ]
+      }
+    },
+    "/api/v1/session": {
+      "get": {
+        "description": "Current user (the frontend calls it after a reload to get the CSRF token).",
+        "operationId": "session_api_v1_session_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Session",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/sites": {
+      "post": {
+        "description": "New site.",
+        "operationId": "create_site_api_v1_sites_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Site",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/api/v1/sites/{site_id}": {
+      "delete": {
+        "description": "Delete a site without rooms.",
+        "operationId": "delete_site_api_v1_sites__site_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Site Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Site",
+        "tags": [
+          "inventory"
+        ]
+      },
+      "put": {
+        "description": "Edit a site.",
+        "operationId": "update_site_api_v1_sites__site_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Site Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Site",
+        "tags": [
+          "inventory"
+        ]
+      }
+    }
+  }
+}

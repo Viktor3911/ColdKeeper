@@ -1,0 +1,178 @@
+# Single entry point for ColdKeeper development (Windows and Linux).
+# Commands are plain program calls without bash constructs: Task runs them with its built-in shell everywhere.
+# Checks never change files; formatting and autofixes are `task fmt`.
+version: "3"
+
+dotenv: [".env"]
+
+env:
+  # Russian output of Python tools on a Windows console (cp1251) and UTF-8 files everywhere.
+  PYTHONUTF8: "1"
+  PYTHONIOENCODING: "utf-8"
+
+vars:
+  PY_SOURCES: backend tests
+  TEST_DATABASE_URL: postgresql+asyncpg://coldkeeper:coldkeeper@localhost:5434/coldkeeper_test
+  API_URL: http://localhost:8000
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  install:
+    desc: Установить зависимости из lock-файлов (uv.lock и package-lock.json)
+    cmds:
+      - uv sync --locked
+      - npm ci --prefix frontend
+
+  hooks:
+    desc: Подключить pre-commit к git
+    cmds:
+      - uv run --locked pre-commit install
+
+  fmt:
+    desc: Форматирование и автоисправления (Black, Ruff, Prettier, ESLint --fix)
+    cmds:
+      - uv run --locked black {{.PY_SOURCES}}
+      - uv run --locked ruff check --fix {{.PY_SOURCES}}
+      - npm --prefix frontend run format
+
+  lint:
+    desc: Проверки стиля без изменения файлов (Black, Ruff, import-linter, ESLint, Prettier)
+    cmds:
+      - uv run --locked black --check --diff {{.PY_SOURCES}}
+      - uv run --locked ruff check {{.PY_SOURCES}}
+      - uv run --locked lint-imports
+      - npm --prefix frontend run lint
+
+  typecheck:
+    desc: mypy (mypy.ini) и TypeScript
+    cmds:
+      - uv run --locked mypy --config-file mypy.ini
+      - npm --prefix frontend run typecheck
+
+  db:up:
+    desc: Запустить PostgreSQL для разработки (порт 5433 на localhost)
+    cmds:
+      - docker compose up -d --wait db
+
+  db:test:
+    desc: Запустить тестовую PostgreSQL в памяти (порт 5434)
+    cmds:
+      - docker compose --profile test up -d --wait db-test
+
+  test:
+    desc: Все backend-тесты; тестовая БД поднимается автоматически, без неё тесты с БД падают
+    deps: [db:test]
+    env:
+      COLDKEEPER_TEST_DATABASE_URL: "{{.TEST_DATABASE_URL}}"
+    cmds:
+      - uv run --locked pytest {{.CLI_ARGS}}
+
+  test:unit:
+    desc: Только тесты без БД (домен, генерация, экспорт)
+    cmds:
+      - uv run --locked pytest tests/unit {{.CLI_ARGS}}
+
+  build:web:
+    desc: Сборка frontend
+    cmds:
+      - npm --prefix frontend run build
+
+  api-types:
+    desc: Обновить OpenAPI-схему и TypeScript-типы API frontend
+    cmds:
+      - uv run --locked python -m backend.interfaces.http.openapi_export frontend/src/api/openapi.json
+      - npm --prefix frontend run api-types
+
+  api-types:check:
+    desc: Проверить, что типы API frontend соответствуют backend
+    cmds:
+      - uv run --locked python -m backend.interfaces.http.openapi_export frontend/src/api/openapi.json --check
+
+  check:
+    desc: Все проверки (как перед коммитом и в CI)
+    cmds:
+      - task: lint
+      - task: typecheck
+      - task: api-types:check
+      - task: test
+      - task: build:web
+
+  migrate:
+    desc: Применить миграции к БД из COLDKEEPER_DATABASE_URL / .env
+    cmds:
+      - uv run --locked alembic upgrade head
+
+  migration:new:
+    desc: 'Новая миграция по моделям: task migration:new -- "описание"'
+    cmds:
+      - uv run --locked alembic revision --autogenerate -m "{{.CLI_ARGS}}"
+
+  dev:api:
+    desc: API с автоперезагрузкой на http://localhost:8000
+    cmds:
+      - uv run --locked uvicorn --factory backend.interfaces.http.app:create_production_app --reload --port 8000
+
+  dev:worker:
+    desc: Worker (пропажа связи, доставка уведомлений)
+    cmds:
+      - uv run --locked coldkeeper-worker
+
+  dev:web:
+    desc: Frontend на http://localhost:5173 (запросы /api проксируются на :8000)
+    cmds:
+      - npm --prefix frontend run dev
+
+  seed:demo:
+    desc: Демо-данные (2 организации, 5 симулируемых датчиков); не для production
+    cmds:
+      - uv run --locked coldkeeper seed-demo
+
+  sim:history:
+    desc: Загрузить 7 суток истории через ingest (ускоренно, только прошлое)
+    cmds:
+      - uv run --locked coldkeeper-sim history --url {{.API_URL}} {{.CLI_ARGS}}
+
+  sim:
+    desc: 'Живой поток демо-программы; пример: task sim -- --scenario demo-shop-1=sustained_excursion'
+    cmds:
+      - uv run --locked coldkeeper-sim live --url {{.API_URL}} {{.CLI_ARGS}}
+
+  sim:scenarios:
+    desc: Список сценариев симулятора
+    cmds:
+      - uv run --locked coldkeeper-sim scenarios
+
+  up:
+    desc: Собрать и запустить в Docker (http://localhost:8080)
+    cmds:
+      - docker compose up -d --build --wait
+
+  demo:docker:
+    desc: Демо в Docker — seed, история и живой симулятор
+    cmds:
+      - docker compose --profile demo run --rm seed
+      - docker compose --profile demo run --rm simulator coldkeeper-sim history --url http://proxy
+      - docker compose --profile demo up -d --force-recreate simulator
+
+  demo:alarm:
+    desc: Тревога для живой демонстрации через ≈5 минут (demo-fridge-1, сценарий door_left_open)
+    cmds:
+      - cmd: docker rm -f coldkeeper-alarm
+        ignore_error: true
+      - docker compose --profile demo stop simulator
+      - docker compose --profile demo run -d --rm --name coldkeeper-alarm simulator coldkeeper-sim live --url http://proxy --scenario demo-fridge-1=door_left_open
+
+  demo:alarm:stop:
+    desc: Вернуть обычную демо-программу симулятора после demo:alarm
+    cmds:
+      - cmd: docker rm -f coldkeeper-alarm
+        ignore_error: true
+      - docker compose --profile demo up -d simulator
+
+  down:
+    desc: Остановить контейнеры (данные БД сохраняются)
+    cmds:
+      - docker compose --profile demo --profile test down

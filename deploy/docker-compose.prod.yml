@@ -1,0 +1,14 @@
+# Production overrides for a VPS:
+#   docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml up -d --build
+# Requires .env with COLDKEEPER_ENV=production, SITE_ADDRESS=<domain>, COLDKEEPER_PUBLIC_URL=https://<domain>,
+# COLDKEEPER_ALLOWED_ORIGINS=["https://<domain>"] and a strong POSTGRES_PASSWORD.
+services:
+  db:
+    # Not reachable from outside the Docker network in production.
+    ports: !reset []
+
+  proxy:
+    ports: !override
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"

@@ -1,0 +1,49 @@
+# SITE_ADDRESS=":80" locally; on a VPS a domain (e.g. coldkeeper.example.ru or *.duckdns.org) —
+# Caddy then obtains and renews the TLS certificate itself (ports 80 and 443 must be reachable).
+{
+	admin off
+	# Behind another reverse proxy (deploy/docker-compose.behind-proxy.yml sets CADDY_TRUSTED_PROXIES=private_ranges):
+	# keep the real client address and scheme from that proxy. The default trusts nobody, as before.
+	servers {
+		trusted_proxies static {$CADDY_TRUSTED_PROXIES:127.0.0.1/32}
+	}
+}
+
+{$SITE_ADDRESS::80} {
+	encode zstd gzip
+
+	# Access log without secrets: device tokens travel in the ingest query string.
+	log {
+		output stdout
+		format filter {
+			request>uri query {
+				replace token REDACTED
+			}
+			request>headers>Cookie delete
+			request>headers>X-Csrf-Token delete
+		}
+	}
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy same-origin
+		Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
+	}
+
+	handle /api/* {
+		request_body {
+			max_size 1MB
+		}
+		reverse_proxy api:8000 {
+			# Only the client address Caddy resolved (through trusted proxies), not a chain the API would misread.
+			header_up X-Forwarded-For {client_ip}
+		}
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}
