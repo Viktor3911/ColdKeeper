@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     worker_delivery_seconds: float = Field(default=5.0, gt=0)
 
     demo_dir: Path = Path(".demo")
+    public_demo: bool = False
 
     @field_validator("telegram_bot_token", "telegram_bot_username", mode="before")
     @classmethod

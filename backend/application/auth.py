@@ -21,6 +21,8 @@ from backend.domain.organizations import Organization, Role, User
 
 MIN_PASSWORD_LENGTH = 10
 MAX_LOGIN_LENGTH = 100
+DEMO_CAFE_NAME = "Кафе «Север» (демо)"
+DEMO_OWNER_LOGIN = "demo-owner"
 _WRONG_CREDENTIALS = "Неверный логин или пароль"
 
 
@@ -83,6 +85,16 @@ class AuthService:
             context = await _context(uow, user, session.csrf_token)
             await uow.commit()
         return LoginResult(session_token=token, context=context)
+
+    async def demo_owner(self, csrf_token: str) -> AuthContext:
+        """Resolve only the active owner of the seeded demo cafe, without issuing a login session."""
+        async with self._uow_factory() as uow:
+            user = await uow.users.get_by_login(DEMO_OWNER_LOGIN)
+            if user is not None and user.is_active and user.role is Role.OWNER:
+                context = await _context(uow, user, csrf_token)
+                if context.organization_name == DEMO_CAFE_NAME:
+                    return context
+        raise NotFoundError("Демо-кафе «Север» не подготовлено для показа")
 
     async def authenticate(self, session_token: str) -> AuthContext:
         """Resolve the session cookie of a request."""

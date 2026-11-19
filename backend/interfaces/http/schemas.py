@@ -63,6 +63,7 @@ class SessionOut(Model):
     organization_id: UUID
     organization_name: str
     csrf_token: str
+    public_demo: bool = False
 
     @classmethod
     def of(cls, context: AuthContext) -> SessionOut:

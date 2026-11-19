@@ -15,6 +15,11 @@ SESSION_COOKIE = "ck_session"
 CSRF_HEADER = "X-CSRF-Token"
 
 
+def demo_cookie_name(container: Container) -> str:
+    """In production a sibling host cannot set the demo CSRF cookie."""
+    return "__Host-ck_demo_csrf" if container.settings.secure_cookies else "ck_demo_csrf"
+
+
 def get_container(request: Request) -> Container:
     """The application's composition root, created once at startup."""
     container: Container = request.app.state.container
@@ -36,6 +41,8 @@ def check_origin(request: Request, container: Container) -> None:
 
 async def current_session(request: Request, container: ContainerDep) -> AuthContext:
     """Resolve the session cookie (401 without a valid session)."""
+    if container.settings.public_demo:
+        return await container.auth.demo_owner(request.cookies.get(demo_cookie_name(container), ""))
     token = request.cookies.get(SESSION_COOKIE)
     if not token:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Требуется вход")
@@ -58,7 +65,7 @@ async def changing_actor(
 ) -> Actor:
     """Actor for state-changing requests: CSRF token of the session and the Origin must match."""
     check_origin(request, container)
-    if csrf_token is None or not hmac.compare_digest(csrf_token, session.csrf_token):
+    if not csrf_token or not hmac.compare_digest(csrf_token.encode(), session.csrf_token.encode()):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Недействительный CSRF-токен, обновите страницу")
     return Actor(user_id=session.user_id, organization_id=session.organization_id, role=session.role)
 

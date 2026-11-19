@@ -26,9 +26,13 @@ export function Layout() {
           <span className={styles.user}>
             {session?.login} · {session?.role === "owner" ? "владелец" : "наблюдатель"}
           </span>
-          <button type="button" className="secondary" onClick={() => void logout()}>
-            Выйти
-          </button>
+          {session?.public_demo ? (
+            <span>Демо с правами владельца</span>
+          ) : (
+            <button type="button" className="secondary" onClick={() => void logout()}>
+              Выйти
+            </button>
+          )}
         </div>
         <nav aria-label="Разделы" className={styles.nav}>
           {LINKS.map((link) => (

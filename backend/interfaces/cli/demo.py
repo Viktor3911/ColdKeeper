@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID
 
+from backend.application.auth import DEMO_CAFE_NAME, DEMO_OWNER_LOGIN
 from backend.application.inventory import SiteInput
 from backend.composition import Container
 from backend.domain.equipment import EquipmentKind, PointSettings, SettingsProfile
@@ -65,10 +66,10 @@ class DemoOrganization:
 
 PROGRAM = (
     DemoOrganization(
-        name="Кафе «Север» (демо)",
+        name=DEMO_CAFE_NAME,
         site="Кафе на Светланской (демо)",
         address="г. Владивосток, ул. Светланская, 1 (демо-адрес)",
-        users=(("demo-owner", Role.OWNER), ("demo-observer", Role.OBSERVER)),
+        users=((DEMO_OWNER_LOGIN, Role.OWNER), ("demo-observer", Role.OBSERVER)),
         equipment=(
             DemoEquipment(
                 "Кухня",

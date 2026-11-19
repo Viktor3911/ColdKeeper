@@ -2,9 +2,18 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Request, Response, status
+import secrets
 
-from backend.interfaces.http.dependencies import SESSION_COOKIE, ContainerDep, SessionDep, WriterDep, check_origin
+from fastapi import APIRouter, HTTPException, Request, Response, status
+
+from backend.interfaces.http.dependencies import (
+    SESSION_COOKIE,
+    ContainerDep,
+    SessionDep,
+    WriterDep,
+    check_origin,
+    demo_cookie_name,
+)
 from backend.interfaces.http.schemas import ErrorOut, LoginIn, SessionOut
 
 router = APIRouter(prefix="/api/v1", tags=["auth"])
@@ -22,6 +31,8 @@ def client_address(request: Request) -> str:
 async def login(body: LoginIn, request: Request, response: Response, container: ContainerDep) -> SessionOut:
     """Open a session: HttpOnly cookie + CSRF token in the body."""
     check_origin(request, container)
+    if container.settings.public_demo:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Демо-стенд открыт для кафе «Север»")
     result = await container.auth.login(body.login, body.password, client_address(request))
     settings = container.settings
     response.set_cookie(
@@ -39,6 +50,8 @@ async def login(body: LoginIn, request: Request, response: Response, container: 
 @router.post("/auth/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(request: Request, container: ContainerDep, _actor: WriterDep) -> Response:
     """Delete the session on the server and the cookie in the browser."""
+    if container.settings.public_demo:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Демо-стенд открыт для кафе «Север»")
     token = request.cookies.get(SESSION_COOKIE)
     if token:
         await container.auth.logout(token)
@@ -48,6 +61,20 @@ async def logout(request: Request, container: ContainerDep, _actor: WriterDep) -
 
 
 @router.get("/session", responses={401: {"model": ErrorOut}})
-async def session(current: SessionDep) -> SessionOut:
+async def session(current: SessionDep, container: ContainerDep, response: Response) -> SessionOut:
     """Current user (the frontend calls it after a reload to get the CSRF token)."""
-    return SessionOut.of(current)
+    response.headers["Cache-Control"] = "no-store"
+    result = SessionOut.of(current)
+    if container.settings.public_demo:
+        result.public_demo = True
+        if not current.csrf_token:
+            result.csrf_token = secrets.token_urlsafe(32)
+            response.set_cookie(
+                demo_cookie_name(container),
+                result.csrf_token,
+                httponly=True,
+                secure=container.settings.secure_cookies,
+                samesite="strict",
+                path="/",
+            )
+    return result

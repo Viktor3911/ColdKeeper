@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, type ReactN
 
 import { api, ApiError, setCsrfToken, setUnauthorizedHandler } from "./api/client";
 import type { Session } from "./api/types";
+import { ErrorState } from "./components/ui";
 
 interface AuthState {
   session: Session | null;
@@ -71,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({ session, loading: query.isPending, isOwner: session?.role === "owner", login, logout }),
     [session, query.isPending, login, logout],
   );
+  if (query.isError) return <ErrorState error={query.error} retry={() => void query.refetch()} />;
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

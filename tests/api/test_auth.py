@@ -94,3 +94,31 @@ async def test_observer_reads_but_cannot_change(container: Container) -> None:
 async def test_anonymous_requests_are_rejected(client: httpx.AsyncClient) -> None:
     for url in ("/api/v1/overview", "/api/v1/inventory", "/api/v1/sensors", "/api/v1/recipients"):
         assert (await client.get(url)).status_code == 401
+
+
+async def test_public_demo_owner_is_scoped_and_cannot_reuse_access_after_shutdown(
+    container: Container, client: httpx.AsyncClient
+) -> None:
+    await make_user(container, "Магазин «Юг» (демо)", "demo-shop")
+    shop = await sign_in(container, "demo-shop")
+    private_site = (await shop.post("/api/v1/sites", json={"name": "Магазин"})).json()["id"]
+    container.settings.public_demo = True
+    assert (await client.get("/api/v1/session")).status_code == 404
+    await make_user(container, "Кафе «Север» (демо)", "demo-owner")
+    session = (await client.get("/api/v1/session")).json()
+    assert (session["login"], session["role"], session["public_demo"]) == ("demo-owner", "owner", True)
+    assert (await shop.get("/api/v1/session")).json()["organization_id"] == session["organization_id"]
+    assert "ck_session" not in client.cookies
+    headers = {"X-CSRF-Token": session["csrf_token"]}
+    site = {"name": "Демо-площадка"}
+    assert (await client.post("/api/v1/sites", json=site)).status_code == 403
+    assert (
+        await client.post("/api/v1/sites", headers={**headers, "Origin": "https://foreign.test"}, json=site)
+    ).status_code == 403
+    assert (await client.post("/api/v1/sites", headers=headers, json=site)).status_code == 201
+    assert (await client.delete(f"/api/v1/sites/{private_site}", headers=headers)).status_code == 404
+    assert len((await client.get("/api/v1/inventory")).json()["sites"]) == 1
+    container.settings.public_demo = False
+    assert (await client.get("/api/v1/session")).status_code == 401
+    assert (await client.post("/api/v1/sites", headers=headers, json=site)).status_code == 401
+    assert (await shop.get("/api/v1/session")).json()["login"] == "demo-shop"

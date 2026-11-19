@@ -1325,6 +1325,11 @@ export interface components {
       organization_id: string;
       /** Organization Name */
       organization_name: string;
+      /**
+       * Public Demo
+       * @default false
+       */
+      public_demo: boolean;
       role: components["schemas"]["Role"];
     };
     /**
