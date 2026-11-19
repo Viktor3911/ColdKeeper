@@ -52,7 +52,8 @@ async def run(settings: Settings, container: Container | None = None) -> None:
         every(settings.worker_delivery_seconds, "deliveries", deliver),
     ]
     if bot is not None:
-        tasks.append(poll_bindings(bot, container.recipients.confirm))
+        subscribe_demo = container.recipients.subscribe_demo if settings.public_demo else None
+        tasks.append(poll_bindings(bot, container.recipients.confirm, subscribe_demo))
     try:
         await asyncio.gather(*tasks)
     finally:

@@ -445,12 +445,8 @@ class RecipientRepository(Protocol):
         """All recipients, including deactivated."""
         ...
 
-    async def get_by_chat(self, organization_id: UUID, chat_id: int) -> Recipient | None:
-        """A recipient of the organization by chat."""
-        ...
-
     async def save(self, recipient: Recipient) -> None:
-        """Insert or update."""
+        """Upsert by organization and chat, keeping the original id and creation time."""
         ...
 
     async def add_code(self, organization_id: UUID, code_hash: str, expires_at: datetime) -> None:

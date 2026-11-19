@@ -2,13 +2,19 @@
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Sequence
 from datetime import timedelta
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
+import pytest
+from aiogram import Bot
+from aiogram.types import Message, Update
 from sqlalchemy import insert, select
 
 from backend.adapters.db.models import RecipientRow
+from backend.adapters.telegram.binding import build_dispatcher
 from backend.adapters.telegram.senders import DryRunSender
 from backend.application.ports import DeliveryError
 from backend.composition import Container, build_container, build_delivery
@@ -16,6 +22,51 @@ from backend.domain.incidents import DeliveryStatus
 from tests.conftest import FakeClock, Fixture, build_point, fast_hasher, make_user, push, sign_in
 
 MINUTE = timedelta(minutes=1)
+
+
+async def test_telegram_start_subscribes_each_demo_viewer_once(
+    container: Container, clock: FakeClock, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    await make_user(container, "Кафе «Север» (демо)", "demo-owner")
+    demo = await sign_in(container, "demo-owner")
+    point = await build_point(demo)
+    await make_user(container, "Магазин «Юг» (демо)", "demo-shop")
+    other = await sign_in(container, "demo-shop")
+    recipients = container.recipients
+    answer = AsyncMock()
+    monkeypatch.setattr(Message, "answer", answer)
+
+    def update(chat_id: int, text: str) -> Update:
+        return Update.model_validate(
+            {
+                "update_id": 1,
+                "message": {
+                    "message_id": 1,
+                    "date": clock.now(),
+                    "chat": {"id": chat_id, "type": "private", "first_name": "Участник"},
+                    "text": text,
+                },
+            }
+        )
+
+    async with Bot("123456:offline-test") as bot:
+        normal = build_dispatcher(recipients.confirm)
+        await normal.feed_update(bot, update(100, "/start"))
+        assert (await demo.get("/api/v1/recipients")).json()["recipients"] == []
+        public = build_dispatcher(recipients.confirm, recipients.subscribe_demo)
+        await public.feed_update(bot, update(100, "/start invalid-code"))
+        assert (await demo.get("/api/v1/recipients")).json()["recipients"] == []
+        await asyncio.gather(*(public.feed_update(bot, update(i, "/start")) for i in (100, 100, 200)))
+        registered = (await demo.get("/api/v1/recipients")).json()["recipients"]
+        assert sorted(item["chat_id"] for item in registered) == [100, 200]
+        first = registered[0]
+        paused = await demo.post(f"/api/v1/recipients/{first['id']}/active", json={"active": False})
+        assert paused.status_code == 204
+        await public.feed_update(bot, update(first["chat_id"], "/start"))
+    assert (await other.get("/api/v1/recipients")).json()["recipients"] == []
+    await _feed(point, clock, [4.0] + [9.0] * 7 + [4.0] * 3)
+    events = (await demo.get("/api/v1/incidents")).json()[0]["events"]
+    assert [(event["kind"], len(event["deliveries"])) for event in events] == [("opened", 2), ("closed", 2)]
 
 
 async def _setup(container: Container) -> Fixture:

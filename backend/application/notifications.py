@@ -6,12 +6,20 @@ import uuid
 from datetime import timedelta
 from uuid import UUID
 
-from backend.application.ports import Clock, DeliveryError, NotificationSender, SecretIssuer, UnitOfWorkFactory
+from backend.application.auth import DEMO_CAFE_NAME
+from backend.application.ports import (
+    Clock,
+    DeliveryError,
+    NotificationSender,
+    SecretIssuer,
+    UnitOfWork,
+    UnitOfWorkFactory,
+)
 from backend.application.views import BindingCode
 from backend.domain.equipment import clean_name
 from backend.domain.errors import NotFoundError
 from backend.domain.incidents import DeliveryStatus, Recipient, RetryPolicy
-from backend.domain.organizations import Actor
+from backend.domain.organizations import Actor, Organization
 
 BINDING_CODE_LIFETIME = timedelta(minutes=15)
 MAX_ERROR_LENGTH = 500
@@ -86,19 +94,31 @@ class RecipientService:
             if organization_id is None:
                 return "Код не найден или устарел. Получите новый код в настройках ColdKeeper."
             organization = await uow.organizations.get(organization_id)
-            existing = await uow.recipients.get_by_chat(organization_id, chat_id)
-            recipient = Recipient(
-                id=existing.id if existing else uuid.uuid4(),
-                organization_id=organization_id,
+            if organization is None:
+                return "Организация не найдена."
+            return await self._subscribe(uow, organization, chat_id, title)
+
+    async def subscribe_demo(self, chat_id: int, title: str) -> str:
+        """Subscribe a private chat to the seeded demo cafe on the public stand."""
+        async with self._uow_factory() as uow:
+            organization = await uow.organizations.get_by_name(DEMO_CAFE_NAME)
+            if organization is None:
+                return "Демо-кафе пока не готово. Попробуйте /start позже."
+            return await self._subscribe(uow, organization, chat_id, title)
+
+    async def _subscribe(self, uow: UnitOfWork, organization: Organization, chat_id: int, title: str) -> str:
+        await uow.recipients.save(
+            Recipient(
+                id=uuid.uuid4(),
+                organization_id=organization.id,
                 chat_id=chat_id,
-                title=clean_name(title or str(chat_id), "название чата"),
+                title=clean_name(title.strip() or str(chat_id), "название чата"),
                 is_active=True,
-                created_at=existing.created_at if existing else now,
+                created_at=self._clock.now(),
             )
-            await uow.recipients.save(recipient)
-            await uow.commit()
-        name = organization.name if organization else "организации"
-        return f"Готово: этот чат будет получать уведомления ColdKeeper ({name})."
+        )
+        await uow.commit()
+        return f"Готово! Вы будете получать уведомления о новых инцидентах и восстановлении. {organization.name}."
 
 
 class DeliverNotifications:

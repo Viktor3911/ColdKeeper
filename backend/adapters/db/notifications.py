@@ -8,6 +8,7 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import select, update
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.adapters.db.models import BindingCodeRow, DeliveryRow, NotificationEventRow, RecipientRow
@@ -50,28 +51,22 @@ class SqlRecipientRepository:
         )
         return [_recipient(row) for row in rows]
 
-    async def get_by_chat(self, organization_id: UUID, chat_id: int) -> Recipient | None:
-        """By chat."""
-        row = await self._session.scalar(
-            select(RecipientRow).where(
-                RecipientRow.organization_id == organization_id, RecipientRow.chat_id == chat_id
-            ),
-        )
-        return None if row is None else _recipient(row)
-
     async def save(self, recipient: Recipient) -> None:
-        """Upsert by id."""
-        await self._session.merge(
-            RecipientRow(
-                id=recipient.id,
-                organization_id=recipient.organization_id,
-                chat_id=recipient.chat_id,
-                title=recipient.title,
-                is_active=recipient.is_active,
-                created_at=recipient.created_at,
-            ),
+        """Concurrent starts for the same chat keep one recipient and its delivery history."""
+        statement = insert(RecipientRow).values(
+            id=recipient.id,
+            organization_id=recipient.organization_id,
+            chat_id=recipient.chat_id,
+            title=recipient.title,
+            is_active=recipient.is_active,
+            created_at=recipient.created_at,
         )
-        await self._session.flush()
+        await self._session.execute(
+            statement.on_conflict_do_update(
+                constraint="uq_recipients_org_chat",
+                set_={"title": statement.excluded.title, "is_active": statement.excluded.is_active},
+            )
+        )
 
     async def add_code(self, organization_id: UUID, code_hash: str, expires_at: datetime) -> None:
         """Store a code hash."""

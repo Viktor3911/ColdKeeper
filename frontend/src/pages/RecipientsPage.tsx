@@ -8,7 +8,7 @@ import styles from "./Page.module.css";
 
 export function RecipientsPage() {
   const recipients = useRecipients();
-  const { isOwner } = useAuth();
+  const { isOwner, session } = useAuth();
   const [code, setCode] = useState<BindingCode | null>(null);
   const createCode = useChange(recipientActions.code, []);
   const setActive = useChange(recipientActions.setActive, [["recipients"]]);
@@ -33,7 +33,12 @@ export function RecipientsPage() {
         )}
       </div>
       <Card>
-        {botConfigured ? (
+        {botConfigured && session?.public_demo ? (
+          <p>
+            Откройте <a href={`https://t.me/${botUsername}`}>@{botUsername}</a> и нажмите «Старт». Бот пришлёт
+            сообщение, когда в демо-кафе «Север» откроется или закроется инцидент.
+          </p>
+        ) : botConfigured ? (
           <p>
             Бот <strong>@{botUsername}</strong> подключён. Уведомления приходят при открытии инцидента и при
             восстановлении, а не на каждое измерение.
